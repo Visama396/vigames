@@ -51,7 +51,7 @@ src/
 - [x] Catálogo con datos de ejemplo, búsqueda y filtros.
 - [x] Ficha dinámica de juego (`/games/[slug]`).
 - [x] Páginas de clasificación y avisos de cuenta.
-- [ ] Juego Phaser real y adaptador de juego.
+- [x] Juegos Phaser reales y adaptador de juego.
 - [ ] Autenticación, perfiles y puntuaciones con Supabase.
 - [ ] Juego PlayCanvas real.
 

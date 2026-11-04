@@ -10,12 +10,15 @@
     "build": "astro build",
     "preview": "astro preview",
     "astro": "astro",
-    "test:lexicon": "node --test src/games/lexicon-quest/tests/lexicon-quest.test.mjs"
+    "test:lexicon": "node --test src/games/lexicon-quest/tests/lexicon-quest.test.mjs",
+    "test:purrgrid": "node --test src/games/purrgrid/tests/purrgrid.test.mjs",
+    "test:chroma": "node --test src/games/chroma/tests/chroma.test.mjs"
   },
   "dependencies": {
     "@astrojs/check": "^0.9.12",
     "@astrojs/netlify": "^8.2.10",
     "@astrojs/react": "^7.1.1",
+    "@supabase/supabase-js": "^2.119.0",
     "@tailwindcss/vite": "^4.3.3",
     "@types/react": "^19.3.0",
     "@types/react-dom": "^19.3.0",

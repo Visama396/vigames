@@ -1,0 +1,61 @@
+import { useEffect, useRef } from "react";
+
+export default function PurrgridGame() {
+  const gameRef = useRef<any>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (typeof window === "undefined" || gameRef.current) return;
+
+    let cancelled = false;
+
+    const boot = async () => {
+      const PhaserModule = await import("phaser");
+      if (cancelled) return;
+      const Phaser = PhaserModule.default || PhaserModule;
+
+      const [{ BootScene }, { MenuScene }, { GameScene }] = await Promise.all([
+        import("../../games/purrgrid/scenes/BootScene"),
+        import("../../games/purrgrid/scenes/MenuScene"),
+        import("../../games/purrgrid/scenes/GameScene"),
+      ]);
+      if (cancelled) return;
+
+      const config: any = {
+        type: Phaser.AUTO,
+        parent: "purrgrid-game",
+        width: 1024,
+        height: 1024,
+        backgroundColor: "#10142a",
+        disableContextMenu: true,
+        scene: [BootScene, MenuScene, GameScene],
+        scale: {
+          mode: Phaser.Scale.FIT,
+          autoCenter: Phaser.Scale.CENTER_BOTH,
+        },
+      };
+
+      gameRef.current = new Phaser.Game(config);
+    };
+
+    void boot();
+
+    return () => {
+      cancelled = true;
+      if (gameRef.current) {
+        gameRef.current.destroy(true);
+        gameRef.current = null;
+      }
+    };
+  }, []);
+
+  return (
+    <div className="flex h-[calc(100vh-4rem)] w-full items-center justify-center bg-slate-950 p-2 sm:p-3">
+      <div
+        id="purrgrid-game"
+        ref={containerRef}
+        className="h-full max-h-[1024px] w-full max-w-[1024px]"
+      />
+    </div>
+  );
+}
