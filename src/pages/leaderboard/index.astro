@@ -1,0 +1,91 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import { publishedGames } from "../../data/games";
+
+const scoredGames = publishedGames.filter((game) => game.supportsScores);
+---
+
+<Layout
+  title="Clasificación"
+  description="Consulta las clasificaciones globales de Visagames. Las puntuaciones se incorporarán con la integración de Supabase."
+>
+  <section class="mx-auto max-w-6xl px-4 pb-4 pt-10 sm:px-6 sm:pt-14">
+    <p class="text-xs font-semibold uppercase tracking-widest text-brand-400">
+      Clasificación
+    </p>
+    <h1 class="mt-2 text-3xl font-bold tracking-tight sm:text-4xl">
+      Clasificaciones globales
+    </h1>
+    <p class="mt-3 max-w-2xl text-sm leading-relaxed text-slate-400 sm:text-base">
+      Aquí aparecerán los mejores resultados de cada juego. De momento el
+      catálogo está en construcción y todavía no se registran puntuaciones.
+    </p>
+  </section>
+
+  <section class="mx-auto max-w-6xl px-4 pb-8 sm:px-6">
+    <div class="rounded-2xl border border-white/10 bg-white/[0.03] p-6">
+      <div class="flex flex-wrap items-center justify-between gap-3">
+        <h2 class="text-lg font-semibold">Estado de la clasificación</h2>
+        <span class="rounded-full border border-amber-400/30 bg-amber-400/10 px-2.5 py-1 text-[11px] font-semibold text-amber-200">
+          Próximamente
+        </span>
+      </div>
+
+      <div
+        class="mt-5 rounded-xl border border-dashed border-white/15 px-6 py-12 text-center"
+      >
+        <p class="text-base font-semibold text-white">
+          Todavía no hay puntuaciones registradas
+        </p>
+        <p class="mx-auto mt-2 max-w-lg text-sm leading-relaxed text-slate-400">
+          La clasificación se activará cuando estén integrados el registro de
+          partidas y la validación de resultados en el servidor. Mientras tanto,
+          puedes jugar como invitado.
+        </p>
+        <a
+          href="/games"
+          class="mt-5 inline-block rounded-lg bg-brand-500 px-4 py-2 text-sm font-semibold text-white hover:bg-brand-400"
+        >
+          Explorar el catálogo
+        </a>
+      </div>
+    </div>
+
+    <div class="mt-8">
+      <h2 class="text-xl font-bold tracking-tight">Juegos con puntuaciones</h2>
+      <p class="mt-1.5 text-sm text-slate-400">
+        Estos juegos enviarán resultados a la clasificación cuando la
+        integración esté lista.
+      </p>
+      <ul class="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        {
+          scoredGames.map((game) => (
+            <li>
+              <a
+                href={`/games/${game.slug}`}
+                class="flex items-center gap-3 rounded-xl border border-white/10 bg-white/[0.03] p-3 transition-colors hover:border-brand-400/50 hover:bg-white/[0.06]"
+              >
+                <img
+                  src={game.thumbnail}
+                  alt=""
+                  width="96"
+                  height="60"
+                  loading="lazy"
+                  class="h-12 w-20 shrink-0 rounded-lg object-cover"
+                />
+                <span>
+                  <span class="block text-sm font-semibold text-white">
+                    {game.title}
+                  </span>
+                  <span class="block text-xs text-slate-400">
+                    {(game.category || []).join(" · ")}
+                  </span>
+                </span>
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+    </div>
+  </section>
+</Layout>

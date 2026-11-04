@@ -1,16 +1,185 @@
 ---
+import Layout from "../layouts/Layout.astro";
+import GameCard from "../components/games/GameCard.astro";
+import { categories, featuredGames, publishedGames } from "../data/games";
+
+const categoryIcons: Record<string, string> = {
+  Arcade: "🕹️",
+  Espacial: "🚀",
+  Carreras: "🏁",
+  "3D": "🧊",
+  Aventura: "🧭",
+  Puzles: "🧩",
+  Casual: "🌿",
+};
 ---
 
-<html lang="en">
-	<head>
-		<meta charset="utf-8" />
-		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-		<link rel="icon" href="/favicon.ico" />
-		<meta name="viewport" content="width=device-width" />
-		<meta name="generator" content={Astro.generator} />
-		<title>Astro</title>
-	</head>
-	<body>
-		<h1>Astro</h1>
-	</body>
-</html>
+<Layout>
+  <section class="relative overflow-hidden">
+    <div
+      aria-hidden="true"
+      class="pointer-events-none absolute -top-40 left-1/2 h-[32rem] w-[48rem] -translate-x-1/2 rounded-full bg-brand-600/20 blur-3xl"
+    >
+    </div>
+    <div
+      aria-hidden="true"
+      class="pointer-events-none absolute -right-32 top-24 h-72 w-72 rounded-full bg-fuchsia-600/15 blur-3xl"
+    >
+    </div>
+
+    <div
+      class="relative mx-auto max-w-6xl px-4 pb-16 pt-16 sm:px-6 sm:pt-24 lg:pb-24"
+    >
+      <div class="mx-auto max-w-3xl text-center">
+        <p
+          class="mx-auto inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs font-medium text-slate-300"
+        >
+          <span class="h-1.5 w-1.5 rounded-full bg-emerald-400"></span>
+          {publishedGames.length} juegos listos para jugar
+        </p>
+        <h1
+          class="mt-6 text-balance text-4xl font-extrabold tracking-tight text-white sm:text-5xl lg:text-6xl"
+        >
+          Juega al instante,{" "}
+          <span
+            class="bg-gradient-to-r from-brand-300 via-sky-300 to-fuchsia-300 bg-clip-text text-transparent"
+          >
+            directamente en el navegador
+          </span>
+        </h1>
+        <p
+          class="mx-auto mt-5 max-w-2xl text-pretty text-base leading-relaxed text-slate-300 sm:text-lg"
+        >
+          Descubre juegos 2D y 3D sin descargas ni instalaciones. Elige un
+          título del catálogo y empieza a jugar en segundos, también desde el
+          móvil.
+        </p>
+        <div class="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
+          <a
+            href="/games"
+            class="rounded-xl bg-brand-500 px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-brand-500/25 transition-colors hover:bg-brand-400"
+          >
+            Explorar catálogo
+          </a>
+          <a
+            href="/leaderboard"
+            class="rounded-xl border border-white/15 bg-white/5 px-5 py-3 text-sm font-semibold text-slate-200 transition-colors hover:bg-white/10 hover:text-white"
+          >
+            Ver clasificación
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="mx-auto max-w-6xl px-4 sm:px-6" aria-labelledby="destacados">
+    <div class="flex flex-wrap items-end justify-between gap-3">
+      <div>
+        <h2 id="destacados" class="text-2xl font-bold tracking-tight sm:text-3xl">
+          Juegos destacados
+        </h2>
+        <p class="mt-1.5 text-sm text-slate-400">
+          Una selección para empezar a jugar ahora mismo.
+        </p>
+      </div>
+      <a
+        href="/games"
+        class="text-sm font-semibold text-brand-300 transition-colors hover:text-brand-200"
+      >
+        Ver todos →
+      </a>
+    </div>
+
+    <div class="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      {featuredGames.map((game) => <GameCard game={game} />)}
+    </div>
+  </section>
+
+  <section
+    id="categorias"
+    class="mx-auto mt-16 max-w-6xl px-4 sm:px-6"
+    aria-labelledby="categorias-titulo"
+  >
+    <h2 id="categorias-titulo" class="text-2xl font-bold tracking-tight sm:text-3xl">
+      Explora por categoría
+    </h2>
+    <p class="mt-1.5 text-sm text-slate-400">
+      Encuentra el estilo de juego que más te apetece.
+    </p>
+
+    <ul class="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+      {
+        categories.map((category) => (
+          <li>
+            <a
+              href={`/games?categoria=${encodeURIComponent(category)}`}
+              class="flex h-full items-center gap-3 rounded-xl border border-white/10 bg-white/[0.03] p-4 text-sm font-semibold text-slate-200 transition-colors hover:border-brand-400/50 hover:bg-white/[0.06] hover:text-white"
+            >
+              <span aria-hidden="true" class="text-xl">
+                {categoryIcons[category] ?? "🎮"}
+              </span>
+              {category}
+            </a>
+          </li>
+        ))
+      }
+    </ul>
+  </section>
+
+  <section class="mx-auto mt-16 max-w-6xl px-4 sm:px-6" aria-labelledby="como-funciona">
+    <h2 id="como-funciona" class="text-2xl font-bold tracking-tight sm:text-3xl">
+      Así de sencillo
+    </h2>
+    <div class="mt-6 grid gap-4 md:grid-cols-3">
+      {
+        [
+          {
+            step: "01",
+            title: "Elige un juego",
+            text: "Navega por el catálogo, busca por título o filtra por categoría y motor.",
+          },
+          {
+            step: "02",
+            title: "Pulsa jugar",
+            text: "Cada juego se carga bajo demanda para que la web siga siendo rápida.",
+          },
+          {
+            step: "03",
+            title: "Compite o practica",
+            text: "Juega como invitado y guarda tus récords cuando crees una cuenta.",
+          },
+        ].map((item) => (
+          <div class="rounded-2xl border border-white/10 bg-white/[0.03] p-5">
+            <p class="text-xs font-bold tracking-widest text-brand-400">
+              {item.step}
+            </p>
+            <h3 class="mt-3 text-base font-semibold text-white">{item.title}</h3>
+            <p class="mt-1.5 text-sm leading-relaxed text-slate-400">
+              {item.text}
+            </p>
+          </div>
+        ))
+      }
+    </div>
+  </section>
+
+  <section class="mx-auto mt-16 max-w-6xl px-4 sm:px-6">
+    <div
+      class="relative overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-br from-brand-600/30 via-slate-900 to-fuchsia-600/20 px-6 py-10 text-center sm:px-12 sm:py-14"
+    >
+      <h2 class="text-balance text-2xl font-bold tracking-tight sm:text-3xl">
+        ¿Listo para tu próxima partida?
+      </h2>
+      <p class="mx-auto mt-3 max-w-xl text-sm leading-relaxed text-slate-300">
+        El catálogo crece poco a poco. Muy pronto podrás guardar tus mejores
+        puntuaciones y competir en las clasificaciones.
+      </p>
+      <a
+        href="/games"
+        class="mt-6 inline-block rounded-xl bg-white px-5 py-3 text-sm font-semibold text-slate-900 transition-colors hover:bg-slate-200"
+      >
+        Empezar a jugar
+      </a>
+    </div>
+  </section>
+</Layout>

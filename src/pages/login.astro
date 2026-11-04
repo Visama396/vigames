@@ -1,0 +1,16 @@
+---
+import Layout from "../layouts/Layout.astro";
+import AuthNotice from "../components/auth/AuthNotice.astro";
+---
+
+<Layout
+  title="Iniciar sesión"
+  description="El inicio de sesión de Visagames estará disponible próximamente. Mientras tanto puedes jugar como invitado."
+>
+  <AuthNotice
+    title="Iniciar sesión"
+    description="Estamos preparando la autenticación con Supabase para que puedas recuperar tu progreso y tus récords."
+    actionLabel="Jugar como invitado"
+    actionHref="/games"
+  />
+</Layout>

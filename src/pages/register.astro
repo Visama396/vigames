@@ -1,0 +1,16 @@
+---
+import Layout from "../layouts/Layout.astro";
+import AuthNotice from "../components/auth/AuthNotice.astro";
+---
+
+<Layout
+  title="Crear cuenta"
+  description="El registro de Visagames estará disponible próximamente. Mientras tanto puedes jugar como invitado."
+>
+  <AuthNotice
+    title="Crear cuenta"
+    description="El registro llegará junto con los perfiles, los récords persistentes y las clasificaciones."
+    actionLabel="Explorar el catálogo"
+    actionHref="/games"
+  />
+</Layout>

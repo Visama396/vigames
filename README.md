@@ -1,43 +1,74 @@
-# Astro Starter Kit: Minimal
+# Visagames
 
-```sh
-bun create astro@latest -- --template minimal
+Plataforma de juegos de navegador construida con Astro, React, TypeScript y
+Tailwind CSS. El catálogo inicial es estático y está pensado para crecer por
+fases hasta integrar Supabase y juegos reales de Phaser y PlayCanvas.
+
+> **Nota:** dont use dev server as I'm using it myself to see the changes in real time.
+
+## Stack
+
+- **Astro** — páginas, layouts, rutas y contenido estático.
+- **React** — islas interactivas (búsqueda y filtros del catálogo).
+- **Tailwind CSS v4** — estilos y diseño responsive.
+- **TypeScript** — contratos y datos compartidos.
+- **Netlify** — adaptador de despliegue.
+
+## Comandos
+
+```bash
+bun install       # instalar dependencias
+bun run build     # compilar el sitio
+bun run preview   # previsualizar la compilación
+bun run astro …   # CLI de Astro
 ```
 
-> 🧑‍🚀 **Seasoned astronaut?** Delete this file. Have fun!
-
-## 🚀 Project Structure
-
-Inside of your Astro project, you'll see the following folders and files:
+## Estructura
 
 ```text
-/
-├── public/
-├── src/
-│   └── pages/
-│       └── index.astro
-└── package.json
+src/
+├── components/
+│   ├── auth/         # avisos de autenticación (fase futura)
+│   ├── games/        # tarjetas y catálogo interactivo
+│   └── layout/       # cabecera y pie
+├── data/games.ts     # catálogo versionado con el código
+├── layouts/          # Layout.astro con el stylesheet de Tailwind
+├── pages/
+│   ├── index.astro
+│   ├── games/        # catálogo y ficha dinámica
+│   ├── leaderboard/
+│   ├── login.astro
+│   └── register.astro
+├── styles/global.css # entrada de Tailwind y tokens de tema
+└── types/game.ts     # contrato de metadatos de juego
 ```
 
-Astro looks for `.astro` or `.md` files in the `src/pages/` directory. Each page is exposed as a route based on its file name.
+## Estado actual
 
-There's nothing special about `src/components/`, but that's where we like to put any Astro/React/Vue/Svelte/Preact components.
+- [x] Astro + React + TypeScript + Tailwind configurados.
+- [x] Adaptador de Netlify y `netlify.toml`.
+- [x] Layout compartido y navegación responsive.
+- [x] Catálogo con datos de ejemplo, búsqueda y filtros.
+- [x] Ficha dinámica de juego (`/games/[slug]`).
+- [x] Páginas de clasificación y avisos de cuenta.
+- [ ] Juego Phaser real y adaptador de juego.
+- [ ] Autenticación, perfiles y puntuaciones con Supabase.
+- [ ] Juego PlayCanvas real.
 
-Any static assets, like images, can be placed in the `public/` directory.
+## Añadir un juego
 
-## 🧞 Commands
+1. Copia una entrada de `src/data/games.ts` y ajusta sus metadatos.
+2. Añade una miniatura en `public/images/games/`.
+3. Mantén `published: false` hasta que el juego y su adaptador estén listos.
+4. Sigue la plantilla de documentación de juego del diseño del proyecto.
 
-All commands are run from the root of the project, from a terminal:
+## Variables de entorno
 
-| Command                   | Action                                           |
-| :------------------------ | :----------------------------------------------- |
-| `bun install`             | Installs dependencies                            |
-| `bun dev`             | Starts local dev server at `localhost:4321`      |
-| `bun build`           | Build your production site to `./dist/`          |
-| `bun preview`         | Preview your build locally, before deploying     |
-| `bun astro ...`       | Run CLI commands like `astro add`, `astro check` |
-| `bun astro -- --help` | Get help using the Astro CLI                     |
+Copia `.env.example` a `.env` cuando se integre Supabase. Solo las variables
+con prefijo `PUBLIC_` llegan al navegador; los secretos deben configurarse en
+Netlify.
 
-## 👀 Want to learn more?
+## Despliegue
 
-Feel free to check [our documentation](https://docs.astro.build) or jump into our [Discord server](https://astro.build/chat).
+El adaptador `@astrojs/netlify` está configurado en `astro.config.mjs`. El
+comando de compilación es `bun run build` y el directorio publicado es `dist`.

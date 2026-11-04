@@ -1,0 +1,74 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import GameCard from "../../components/games/GameCard.astro";
+import { games, categories } from "../../data/games";
+
+const categoryFilter = Astro.url.searchParams.get("categoria");
+const filteredGames = categoryFilter
+  ? games.filter((game) => game.category.includes(categoryFilter))
+  : games;
+---
+
+<Layout title="Catálogo" description="Explora todos los juegos de navegador disponibles en Visagames.">
+  <section class="mx-auto max-w-6xl px-4 pb-4 pt-10 sm:px-6 sm:pt-14">
+    <p class="text-xs font-semibold uppercase tracking-widest text-brand-400">
+      Catálogo
+    </p>
+    <h1 class="mt-2 text-3xl font-bold tracking-tight sm:text-4xl">
+      Todos los juegos
+    </h1>
+    <p class="mt-3 max-w-2xl text-sm leading-relaxed text-slate-400 sm:text-base">
+      Elige un juego y empieza a jugar al instante desde tu navegador.
+    </p>
+  </section>
+
+  <section class="mx-auto max-w-6xl px-4 sm:px-6">
+    <div class="flex flex-wrap items-center gap-2">
+      <a
+        href="/games"
+        class={`rounded-full px-3 py-1 text-xs font-semibold transition-colors ${
+          !categoryFilter
+            ? "bg-brand-500 text-white"
+            : "border border-white/10 bg-white/5 text-slate-300 hover:bg-white/10 hover:text-white"
+        }`}
+      >
+        Todos
+      </a>
+      {categories.map((category) => (
+        <a
+          href={`/games?categoria=${encodeURIComponent(category)}`}
+          class={`rounded-full px-3 py-1 text-xs font-semibold transition-colors ${
+            categoryFilter === category
+              ? "bg-brand-500 text-white"
+              : "border border-white/10 bg-white/5 text-slate-300 hover:bg-white/10 hover:text-white"
+          }`}
+        >
+          {category}
+        </a>
+      ))}
+    </div>
+
+    <div class="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      {filteredGames.map((game) => (
+        <GameCard game={game} />
+      ))}
+    </div>
+
+    {filteredGames.length === 0 && (
+      <div class="mt-8 rounded-2xl border border-dashed border-white/15 px-6 py-12 text-center">
+        <p class="text-base font-semibold text-white">
+          No hay juegos en esta categoría
+        </p>
+        <p class="mx-auto mt-2 max-w-md text-sm text-slate-400">
+          Prueba con otra categoría o vuelve al catálogo completo.
+        </p>
+        <a
+          href="/games"
+          class="mt-4 inline-block rounded-lg bg-brand-500 px-4 py-2 text-sm font-semibold text-white hover:bg-brand-400"
+        >
+          Ver todos
+        </a>
+      </div>
+    )}
+  </section>
+</Layout>
