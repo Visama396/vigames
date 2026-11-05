@@ -1,14 +1,16 @@
 import Phaser from "phaser";
-import { BOARD, EXPAND_COST, GENERATOR_POWER_OUTPUT, MACHINE_DEFS, RECIPES, RESOURCES } from "../config";
-import { createInitialState, placeMachine, upgradeMachine, getMachineUpgradeCost, getMachinePowerDemand, getMachinePowerOutput, getMachineAtCell, connectMachines, loadCoalIntoGenerator, toggleGeneratorAuto, buyCoal, sellResource, getPowerStats, getTotalResource, mineCell, expandBoard, getExpansionCost, upgradePickaxe, getPickaxeUpgradeCost, buyCell } from "../state/game-state";
+import { AUTOSAVE_STEPS, BOARD, EXPAND_COST, GENERATOR_POWER_OUTPUT, MACHINE_DEFS, RECIPES, RESOURCES } from "../config";
+import { placeMachine, upgradeMachine, getMachineUpgradeCost, getMachinePowerDemand, getMachinePowerOutput, getMachineAtCell, connectMachines, loadCoalIntoGenerator, loadMachineInputs, toggleGeneratorAuto, buyCoal, sellResource, getPowerStats, getTotalResource, mineCell, expandBoard, getExpansionCost, upgradePickaxe, getPickaxeUpgradeCost, buyCell } from "../state/game-state";
+import { loadGameState, saveGameState } from "../state/persistence";
+import { formatResourceRate, getResourceRates } from "../simulation/rates";
 import { stepSimulation } from "../simulation/simulation";
 import type { GameState, MachineState, MachineType, ResourceId, UiState } from "../types";
 
 const RESOURCE_IDS = Object.keys(RESOURCES) as ResourceId[];
 
-const PANEL_X_OFFSET = 240;
+const PANEL_X_OFFSET = 264;
 const PANEL_Y = 10;
-const PANEL_WIDTH = 224;
+const PANEL_WIDTH = 248;
 const SELL_ROW_TOP = PANEL_Y + 30;
 const SELL_ROW_HEIGHT = 30;
 const SELL_ALL_Y = SELL_ROW_TOP + RESOURCE_IDS.length * SELL_ROW_HEIGHT + 6;
@@ -18,6 +20,7 @@ const PANEL_HEIGHT = 420;
 interface SellRow {
   resource: ResourceId;
   label: Phaser.GameObjects.Text;
+  rate: Phaser.GameObjects.Text;
   button: Phaser.GameObjects.Rectangle;
   buttonText: Phaser.GameObjects.Text;
 }
@@ -34,6 +37,7 @@ export class MineScene extends Phaser.Scene {
   private resourceSprites: Phaser.GameObjects.Image[] = [];
   private machineLabels: Phaser.GameObjects.Text[] = [];
   private timeAccumulator = 0;
+  private stepsSinceSave = 0;
   private hudText!: Phaser.GameObjects.Text;
   private panelText!: Phaser.GameObjects.Text;
   private buttonTexts: Phaser.GameObjects.Text[] = [];
@@ -50,7 +54,8 @@ export class MineScene extends Phaser.Scene {
   }
 
   create() {
-    this.state = createInitialState();
+    this.state = loadGameState();
+    this.stepsSinceSave = 0;
     this.ui = {
       selectedMachineId: null,
       placementType: null,
@@ -103,6 +108,9 @@ export class MineScene extends Phaser.Scene {
     }
 
     this.events.on("update", this.updateSimulation, this);
+    this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
+      saveGameState(this.state);
+    });
   }
 
   private drawVein() {
@@ -288,6 +296,12 @@ export class MineScene extends Phaser.Scene {
         color: "#cbd5e1",
       }).setScrollFactor(0).setDepth(101);
 
+      const rate = this.add.text(panelX + PANEL_WIDTH - 100, y + 5, "", {
+        fontFamily: "monospace",
+        fontSize: "10px",
+        color: "#94a3b8",
+      }).setOrigin(1, 0).setScrollFactor(0).setDepth(101);
+
       const button = this.add.rectangle(panelX + PANEL_WIDTH - 96, y, 88, 24, 0x1e293b, 0.9)
         .setOrigin(0, 0)
         .setStrokeStyle(1, 0x22c55e)
@@ -313,7 +327,7 @@ export class MineScene extends Phaser.Scene {
         color: "#22c55e",
       }).setScrollFactor(0).setDepth(101);
 
-      this.sellRows.push({ resource, label, button, buttonText });
+      this.sellRows.push({ resource, label, rate, button, buttonText });
     }
 
     this.sellAllButton = this.add.rectangle(
@@ -361,13 +375,23 @@ export class MineScene extends Phaser.Scene {
 
   private updateSellPanel() {
     let totalCredits = 0;
+    const rates = getResourceRates(this.state);
 
     for (const row of this.sellRows) {
       const amount = getTotalResource(this.state, row.resource);
       const credits = amount * RESOURCES[row.resource].price;
       totalCredits += credits;
 
+      const rateText = formatResourceRate(rates[row.resource]);
+      const rateColor =
+        rateText === "±0/s"
+          ? "#94a3b8"
+          : rates[row.resource] > 0
+            ? "#4ade80"
+            : "#f87171";
+
       row.label.setText(`${RESOURCES[row.resource].short}: ${amount}`);
+      row.rate.setText(rateText).setColor(rateColor);
       row.buttonText.setText(`Vender €${credits}`);
       this.setRowEnabled(row.button, row.buttonText, amount > 0);
     }
@@ -549,7 +573,29 @@ export class MineScene extends Phaser.Scene {
         const res = loadCoalIntoGenerator(this.state, machine.id);
         if (res.ok) this.showMessage("Carbón cargado en generador", "success");
         else if (res.error && res.error !== "El generador ya está lleno.") this.showMessage(res.error, "error");
+        return;
       }
+
+      // Fundición y ensambladora se alimentan manualmente desde el almacén (o
+      // desde la salida de otra máquina) al hacer clic sobre ellas.
+      if (machine.type === "smelter" || machine.type === "assembler") {
+        const res = loadMachineInputs(this.state, machine.id);
+        if (res.ok) {
+          const parts = (
+            Object.entries(res.loaded ?? {}) as [ResourceId, number][]
+          )
+            .map(
+              ([resource, amount]) =>
+                `${amount} ${RESOURCES[resource].short}`,
+            )
+            .join(", ");
+          this.showMessage(`Cargado: ${parts}`, "success");
+        } else if (res.error && res.error !== "La máquina ya está llena.") {
+          this.showMessage(res.error, "error");
+        }
+        return;
+      }
+
       return;
     }
 
@@ -607,10 +653,19 @@ export class MineScene extends Phaser.Scene {
   private updateSimulation(time: number, delta: number) {
     if (this.ui.paused) return;
     this.timeAccumulator += delta / 1000;
+    let stepped = false;
     while (this.timeAccumulator >= 0.25) {
       stepSimulation(this.state, 0.25);
       this.timeAccumulator -= 0.25;
+      this.stepsSinceSave += 1;
+      stepped = true;
     }
+
+    if (stepped && this.stepsSinceSave >= AUTOSAVE_STEPS) {
+      this.stepsSinceSave = 0;
+      saveGameState(this.state);
+    }
+
     this.render();
   }
 
@@ -849,7 +904,15 @@ export class MineScene extends Phaser.Scene {
         for (const [r, v] of Object.entries(machine.outputs)) {
           panel += `  ${r}: ${v}\n`;
         }
-        panel += `\nClick: seleccionar/cargar carbón`;
+        const clickHint =
+          machine.type === "drill"
+            ? "Click: minar la veta"
+            : machine.type === "generator"
+              ? "Click: cargar carbón"
+              : machine.type === "smelter"
+                ? "Click: cargar mineral de hierro"
+                : "Click: cargar lingotes";
+        panel += `\n${clickHint}`;
         panel += `\nMejorar: elige su botón y vuelve a hacer click aquí`;
         this.panelText.setText(panel);
       }

@@ -15,6 +15,7 @@ export const LEVELS: PuzzleLevel[] = [
     colorCount: 2,
     emptyBottleCount: 2,
     difficulty: "tutorial",
+    parMoves: 3,
     seed: 1101,
     bottles: [
       { capacity: 4, segments: ["coral", "coral", "coral", "amber"] },
@@ -35,6 +36,7 @@ export const LEVELS: PuzzleLevel[] = [
     colorCount: 2,
     emptyBottleCount: 2,
     difficulty: "tutorial",
+    parMoves: 6,
     seed: 1102,
     bottles: [
       { capacity: 4, segments: ["coral", "amber", "coral", "amber"] },
@@ -60,6 +62,7 @@ export const LEVELS: PuzzleLevel[] = [
     colorCount: 3,
     emptyBottleCount: 2,
     difficulty: "easy",
+    parMoves: 10,
     seed: 2101,
     bottles: [
       { capacity: 4, segments: ["lemon", "coral", "lemon", "coral"] },
@@ -93,6 +96,7 @@ export const LEVELS: PuzzleLevel[] = [
     colorCount: 3,
     emptyBottleCount: 2,
     difficulty: "easy",
+    parMoves: 8,
     seed: 2102,
     bottles: [
       { capacity: 4, segments: ["amber", "amber", "amber", "lemon"] },
@@ -120,6 +124,7 @@ export const LEVELS: PuzzleLevel[] = [
     colorCount: 4,
     emptyBottleCount: 2,
     difficulty: "normal",
+    parMoves: 10,
     seed: 3101,
     bottles: [
       { capacity: 4, segments: ["mint", "coral", "lemon", "amber"] },
@@ -149,6 +154,7 @@ export const LEVELS: PuzzleLevel[] = [
     colorCount: 4,
     emptyBottleCount: 2,
     difficulty: "normal",
+    parMoves: 10,
     seed: 3102,
     bottles: [
       { capacity: 4, segments: ["coral", "amber", "amber", "lemon"] },
@@ -181,6 +187,7 @@ export const LEVELS: PuzzleLevel[] = [
     colorCount: 5,
     emptyBottleCount: 2,
     difficulty: "normal",
+    parMoves: 14,
     seed: 4101,
     bottles: [
       { capacity: 4, segments: ["lemon", "lemon", "amber", "coral"] },
@@ -218,6 +225,7 @@ export const LEVELS: PuzzleLevel[] = [
     colorCount: 5,
     emptyBottleCount: 2,
     difficulty: "hard",
+    parMoves: 13,
     seed: 4102,
     bottles: [
       { capacity: 4, segments: ["mint", "lemon", "amber", "amber"] },
@@ -252,6 +260,7 @@ export const LEVELS: PuzzleLevel[] = [
     colorCount: 6,
     emptyBottleCount: 2,
     difficulty: "hard",
+    parMoves: 19,
     seed: 5101,
     bottles: [
       { capacity: 4, segments: ["mint", "amber", "blue", "aqua"] },
@@ -301,6 +310,7 @@ export const LEVELS: PuzzleLevel[] = [
     colorCount: 6,
     emptyBottleCount: 2,
     difficulty: "expert",
+    parMoves: 20,
     seed: 5102,
     bottles: [
       { capacity: 4, segments: ["aqua", "amber", "lemon", "mint"] },
@@ -349,6 +359,7 @@ export const LEVELS: PuzzleLevel[] = [
     colorCount: 7,
     emptyBottleCount: 2,
     difficulty: "expert",
+    parMoves: 24,
     seed: 6101,
     bottles: [
       { capacity: 4, segments: ["coral", "violet", "coral", "violet"] },
@@ -401,6 +412,7 @@ export const LEVELS: PuzzleLevel[] = [
     colorCount: 8,
     emptyBottleCount: 2,
     difficulty: "expert",
+    parMoves: 25,
     seed: 7101,
     bottles: [
       { capacity: 4, segments: ["amber", "lemon", "pink", "aqua"] },

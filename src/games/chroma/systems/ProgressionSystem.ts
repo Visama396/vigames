@@ -1,5 +1,9 @@
 import { SAVE_KEY } from "../config.ts";
-import type { PlayerProgress, PlayerSettings } from "../types/puzzle.ts";
+import type {
+  PlayerProgress,
+  PlayerSettings,
+  SolutionTier,
+} from "../types/puzzle.ts";
 
 export interface StorageLike {
   getItem(key: string): string | null;
@@ -104,6 +108,18 @@ export function saveProgress(
   if (!storage) return;
   try {
     storage.setItem(SAVE_KEY, JSON.stringify(progress));
+
+    // Cloud sync is browser-only and best effort. The dynamic import keeps
+    // the pure progression module testable without Supabase in Node.
+    if (typeof window !== "undefined" && storage === window.localStorage) {
+      void import("../../../lib/game-progress")
+        .then(({ queueGameProgress }) =>
+          queueGameProgress("chroma", progress),
+        )
+        .catch(() => {
+          // Sin conexión el guardado local sigue funcionando.
+        });
+    }
   } catch {
     // El juego sigue funcionando sin persistencia (modo privado, cuota, etc.).
   }
@@ -174,4 +190,38 @@ export function formatMoves(moves: number): string {
 
 export function formatShortMoves(moves: number): string {
   return `${moves} mov.`;
+}
+
+/** Margen sobre el par que sigue contando como solución eficiente. */
+export const EFFICIENT_MOVE_MARGIN = 2;
+
+export const SOLUTION_TIER_LABELS: Record<SolutionTier, string> = {
+  optimal: "Óptima",
+  efficient: "Eficiente",
+  completed: "Resuelta",
+};
+
+/**
+ * Clasifica una partida según su par. Durante la partida, `moves <= par`
+ * significa que el jugador sigue en ritmo óptimo; al completar el nivel solo
+ * se alcanza esa cifra con una solución de longitud mínima.
+ */
+export function getSolutionTier(
+  moves: number,
+  parMoves: number,
+): SolutionTier {
+  if (moves <= parMoves) return "optimal";
+  if (moves <= parMoves + EFFICIENT_MOVE_MARGIN) return "efficient";
+  return "completed";
+}
+
+export function describeSolutionTier(tier: SolutionTier): string {
+  switch (tier) {
+    case "optimal":
+      return "Solución óptima";
+    case "efficient":
+      return "Solución eficiente";
+    case "completed":
+      return "Resuelta con más pasos";
+  }
 }

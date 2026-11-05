@@ -172,3 +172,70 @@ export function solve(
     exhausted,
   };
 }
+
+/**
+ * Variante de búsqueda en anchura: si encuentra solución, es de longitud
+ * mínima. Se usa para calcular el par de los niveles generados y en pruebas.
+ */
+export function solveOptimal(
+  bottles: readonly BottleState[],
+  options: SolveOptions = {},
+): SolverResult {
+  const { maxNodes = 500_000 } = options;
+  const { state, capacity } = encode(bottles);
+
+  if (isSolvedState(state, capacity)) {
+    return { solved: true, moves: [], nodes: 0, exhausted: false };
+  }
+
+  interface Step {
+    previous: string | null;
+    move: PourMove | null;
+  }
+
+  const steps = new Map<string, Step>();
+  const startKey = canonical(state);
+  steps.set(startKey, { previous: null, move: null });
+
+  const queue: Array<{ key: string; state: number[][] }> = [
+    { key: startKey, state },
+  ];
+  let nodes = 0;
+
+  for (let head = 0; head < queue.length; head += 1) {
+    if (nodes >= maxNodes) {
+      return { solved: false, moves: null, nodes, exhausted: true };
+    }
+
+    const current = queue[head]!;
+    nodes += 1;
+
+    for (const move of movesFor(current.state, capacity)) {
+      const next = applyMove(current.state, move);
+      const key = canonical(next);
+      if (steps.has(key)) continue;
+
+      steps.set(key, {
+        previous: current.key,
+        move: { from: move.from, to: move.to, count: move.count },
+      });
+
+      if (isSolvedState(next, capacity)) {
+        const path: PourMove[] = [];
+        let cursor: string = key;
+        while (true) {
+          const step = steps.get(cursor)!;
+          if (!step.move) break;
+          path.push(step.move);
+          cursor = step.previous!;
+        }
+        path.reverse();
+        return { solved: true, moves: path, nodes, exhausted: false };
+      }
+
+      queue.push({ key, state: next });
+    }
+  }
+
+  return { solved: false, moves: null, nodes, exhausted: false };
+}

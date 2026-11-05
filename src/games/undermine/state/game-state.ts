@@ -408,6 +408,80 @@ export function loadCoalIntoGenerator(
   return { ok: true };
 }
 
+export function loadMachineInputs(
+  state: GameState,
+  machineId: string,
+): ActionResult & { loaded?: Partial<Record<ResourceId, number>> } {
+  const machine = state.machines.find((item) => item.id === machineId);
+  if (!machine) return { ok: false, error: "La máquina ya no existe." };
+
+  const recipe = RECIPES[machine.type];
+  const inputEntries = recipe
+    ? (Object.entries(recipe.inputs) as [ResourceId, number][])
+    : [];
+
+  if (inputEntries.length === 0 || machine.type === "generator") {
+    return { ok: false, error: "Esta máquina no acepta materiales." };
+  }
+
+  const loaded: Partial<Record<ResourceId, number>> = {};
+  let totalLoaded = 0;
+  let totalSpace = 0;
+
+  // Cada recurso de la receta se carga hasta llenar el almacén interno,
+  // primero desde el almacén general y después desde otras máquinas.
+  for (const [resource] of inputEntries) {
+    const stored = machine.inputs[resource] ?? 0;
+    let remaining = INVENTORY_CAPACITY - stored;
+    totalSpace += Math.max(0, remaining);
+    if (remaining <= 0) continue;
+
+    let loadedResource = 0;
+
+    const fromInventory = Math.min(remaining, state.inventory[resource] ?? 0);
+    if (fromInventory > 0) {
+      state.inventory[resource] =
+        (state.inventory[resource] ?? 0) - fromInventory;
+      remaining -= fromInventory;
+      loadedResource += fromInventory;
+    }
+
+    for (const other of state.machines) {
+      if (remaining <= 0) break;
+      if (other.id === machine.id) continue;
+
+      const available = other.outputs[resource] ?? 0;
+      if (available <= 0) continue;
+
+      const take = Math.min(remaining, available);
+      const next = available - take;
+      if (next > 0) {
+        other.outputs[resource] = next;
+      } else {
+        delete other.outputs[resource];
+      }
+
+      remaining -= take;
+      loadedResource += take;
+    }
+
+    if (loadedResource > 0) {
+      machine.inputs[resource] = stored + loadedResource;
+      loaded[resource] = loadedResource;
+      totalLoaded += loadedResource;
+    }
+  }
+
+  if (totalSpace <= 0) {
+    return { ok: false, error: "La máquina ya está llena." };
+  }
+  if (totalLoaded <= 0) {
+    return { ok: false, error: "No hay materiales en el almacén." };
+  }
+
+  return { ok: true, loaded };
+}
+
 export function toggleGeneratorAuto(
   state: GameState,
   machineId: string,

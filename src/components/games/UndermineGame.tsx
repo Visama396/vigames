@@ -1,4 +1,5 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
+import { hydrateGameProgress } from "../../lib/game-progress";
 
 export default function UndermineGame() {
   const gameRef = useRef<any>(null);
@@ -7,37 +8,48 @@ export default function UndermineGame() {
   useEffect(() => {
     if (typeof window === "undefined" || gameRef.current) return;
 
-    let game: any = null;
+    let cancelled = false;
 
-    import("phaser").then((PhaserModule) => {
+    const boot = async () => {
+      await hydrateGameProgress("undermine");
+      if (cancelled) return;
+
+      const PhaserModule = await import("phaser");
+      if (cancelled) return;
       const Phaser = PhaserModule.default || PhaserModule;
-      import("../../games/undermine/scenes/BootScene").then(({ BootScene }) => {
-        import("../../games/undermine/scenes/MineScene").then(({ MineScene }) => {
-          const config: any = {
-            type: Phaser.AUTO,
-            parent: "undermine-game",
-            width: 1024,
-            height: 768,
-            backgroundColor: "#0f172a",
-            scene: [BootScene, MineScene],
-            scale: {
-              mode: Phaser.Scale.FIT,
-              autoCenter: Phaser.Scale.CENTER_BOTH,
-            },
-            physics: {
-              default: "arcade",
-              arcade: {
-                debug: false,
-              },
-            },
-          };
-          game = new Phaser.Game(config);
-          gameRef.current = game;
-        });
-      });
-    });
+
+      const [{ BootScene }, { MineScene }] = await Promise.all([
+        import("../../games/undermine/scenes/BootScene"),
+        import("../../games/undermine/scenes/MineScene"),
+      ]);
+      if (cancelled) return;
+
+      const config: any = {
+        type: Phaser.AUTO,
+        parent: "undermine-game",
+        width: 1024,
+        height: 768,
+        backgroundColor: "#0f172a",
+        scene: [BootScene, MineScene],
+        scale: {
+          mode: Phaser.Scale.FIT,
+          autoCenter: Phaser.Scale.CENTER_BOTH,
+        },
+        physics: {
+          default: "arcade",
+          arcade: {
+            debug: false,
+          },
+        },
+      };
+
+      gameRef.current = new Phaser.Game(config);
+    };
+
+    void boot();
 
     return () => {
+      cancelled = true;
       if (gameRef.current) {
         gameRef.current.destroy(true);
         gameRef.current = null;

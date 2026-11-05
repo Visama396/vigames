@@ -1,4 +1,6 @@
 ---
+import HeaderAuth from "../auth/HeaderAuth";
+
 const pathname = Astro.url.pathname;
 
 const links = [
@@ -55,20 +57,7 @@ function isActive(href: string) {
       </ul>
     </nav>
 
-    <div class="ml-auto flex items-center gap-2">
-      <a
-        href="/login"
-        class="hidden rounded-lg px-3 py-2 text-sm font-medium text-slate-300 transition-colors hover:bg-white/5 hover:text-white sm:block"
-      >
-        Iniciar sesión
-      </a>
-      <a
-        href="/register"
-        class="rounded-lg bg-brand-500 px-3 py-2 text-sm font-semibold text-white shadow-lg shadow-brand-500/25 transition-colors hover:bg-brand-400"
-      >
-        Crear cuenta
-      </a>
-    </div>
+    <HeaderAuth client:load />
   </div>
 
   <nav

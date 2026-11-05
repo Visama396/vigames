@@ -102,7 +102,7 @@ export const MACHINE_DEFS: Record<MachineType, MachineDefinition> = {
     label: "Fundición",
     short: "FUN",
     description:
-      "Convierte 2 minerales de hierro en 1 lingote. Consume 2 W por Mk (el doble de rápida por Mk).",
+      "Convierte 2 minerales de hierro en 1 lingote. Consume 2 W por Mk (el doble de rápida por Mk). Haz clic para cargar mineral.",
     cost: 30,
     width: 1,
     height: 1,
@@ -115,7 +115,7 @@ export const MACHINE_DEFS: Record<MachineType, MachineDefinition> = {
     label: "Ensambladora",
     short: "ENS",
     description:
-      "Convierte 2 lingotes en 1 componente. Consume 3 W por Mk (el doble de rápida por Mk).",
+      "Convierte 2 lingotes en 1 componente. Consume 3 W por Mk (el doble de rápida por Mk). Haz clic para cargar lingotes.",
     cost: 40,
     width: 1,
     height: 1,

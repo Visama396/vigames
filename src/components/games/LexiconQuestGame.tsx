@@ -1,4 +1,5 @@
 import { useEffect, useRef } from "react";
+import { hydrateGameProgress } from "../../lib/game-progress";
 
 export default function LexiconQuestGame() {
   const gameRef = useRef<any>(null);
@@ -7,33 +8,43 @@ export default function LexiconQuestGame() {
   useEffect(() => {
     if (typeof window === "undefined" || gameRef.current) return;
 
-    let game: any = null;
+    let cancelled = false;
 
-    import("phaser").then((PhaserModule) => {
+    const boot = async () => {
+      await hydrateGameProgress("lexicon-quest");
+      if (cancelled) return;
+
+      const PhaserModule = await import("phaser");
+      if (cancelled) return;
       const Phaser = PhaserModule.default || PhaserModule;
-      import("../../games/lexicon-quest/scenes/BootScene").then(({ BootScene }) => {
-        import("../../games/lexicon-quest/scenes/MenuScene").then(({ MenuScene }) => {
-          import("../../games/lexicon-quest/scenes/BattleScene").then(({ BattleScene }) => {
-            const config: any = {
-              type: Phaser.AUTO,
-              parent: "lexicon-quest-game",
-              width: 1024,
-              height: 768,
-              backgroundColor: "#090d18",
-              scene: [BootScene, MenuScene, BattleScene],
-              scale: {
-                mode: Phaser.Scale.FIT,
-                autoCenter: Phaser.Scale.CENTER_BOTH,
-              },
-            };
-            game = new Phaser.Game(config);
-            gameRef.current = game;
-          });
-        });
-      });
-    });
+
+      const [{ BootScene }, { MenuScene }, { BattleScene }] = await Promise.all([
+        import("../../games/lexicon-quest/scenes/BootScene"),
+        import("../../games/lexicon-quest/scenes/MenuScene"),
+        import("../../games/lexicon-quest/scenes/BattleScene"),
+      ]);
+      if (cancelled) return;
+
+      const config: any = {
+        type: Phaser.AUTO,
+        parent: "lexicon-quest-game",
+        width: 1024,
+        height: 768,
+        backgroundColor: "#090d18",
+        scene: [BootScene, MenuScene, BattleScene],
+        scale: {
+          mode: Phaser.Scale.FIT,
+          autoCenter: Phaser.Scale.CENTER_BOTH,
+        },
+      };
+
+      gameRef.current = new Phaser.Game(config);
+    };
+
+    void boot();
 
     return () => {
+      cancelled = true;
       if (gameRef.current) {
         gameRef.current.destroy(true);
         gameRef.current = null;

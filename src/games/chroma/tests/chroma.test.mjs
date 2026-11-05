@@ -14,19 +14,25 @@ import {
 } from "../systems/MoveValidator.ts";
 import { MoveHistory } from "../systems/MoveHistory.ts";
 import { countColors, validateLevel } from "../systems/PuzzleValidator.ts";
-import { solve } from "../systems/PuzzleSolver.ts";
+import { solve, solveOptimal } from "../systems/PuzzleSolver.ts";
 import { generateLevel } from "../systems/PuzzleGenerator.ts";
 import {
   applyLevelCompletion,
   defaultProgress,
+  describeSolutionTier,
   formatMoves,
   formatShortMoves,
+  getSolutionTier,
   isLevelUnlocked,
   loadProgress,
   nextPlayableLevel,
   saveProgress,
   withSettings,
 } from "../systems/ProgressionSystem.ts";
+import {
+  computeGameScore,
+  formatScoreDetail,
+} from "../../../lib/game-scores.ts";
 
 test("todos los niveles son válidos y su solución conocida funciona", () => {
   for (const level of LEVELS) {

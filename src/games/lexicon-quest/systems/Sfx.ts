@@ -115,6 +115,11 @@ export class Sfx {
     this.tone(90, 0.22, { type: "square", volume: 0.025, delay: 0.02 });
   }
 
+  block(): void {
+    this.tone(220, 0.12, { type: "square", volume: 0.028, slideTo: 330 });
+    this.tone(330, 0.16, { type: "triangle", volume: 0.02, delay: 0.05 });
+  }
+
   heal(): void {
     this.tone(523, 0.18, { type: "sine", volume: 0.025 });
     this.tone(659, 0.2, { type: "sine", volume: 0.022, delay: 0.07 });

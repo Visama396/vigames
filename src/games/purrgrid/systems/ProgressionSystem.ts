@@ -106,6 +106,18 @@ export function saveProgress(
   if (!storage) return;
   try {
     storage.setItem(SAVE_KEY, JSON.stringify(progress));
+
+    // Cloud sync is browser-only and best effort. The dynamic import keeps
+    // the pure progression module testable without Supabase in Node.
+    if (typeof window !== "undefined" && storage === window.localStorage) {
+      void import("../../../lib/game-progress")
+        .then(({ queueGameProgress }) =>
+          queueGameProgress("purrgrid", progress),
+        )
+        .catch(() => {
+          // Sin conexión el guardado local sigue funcionando.
+        });
+    }
   } catch {
     // El juego sigue funcionando sin persistencia (modo privado, cuota, etc.).
   }

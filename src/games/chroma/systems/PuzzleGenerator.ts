@@ -7,7 +7,7 @@ import type {
 } from "../types/puzzle.ts";
 import { isSolved } from "./MoveValidator.ts";
 import { validateLevel } from "./PuzzleValidator.ts";
-import { solve } from "./PuzzleSolver.ts";
+import { solveOptimal } from "./PuzzleSolver.ts";
 import { createRng, shuffle, type Rng } from "./random.ts";
 
 const DEFAULT_NAMES = [
@@ -98,9 +98,8 @@ export function generateLevel(options: GeneratorOptions): PuzzleLevel {
     if (isSolved(bottles)) continue;
     if (mixedBottleCount(bottles) < minimumMixed) continue;
 
-    const solver = solve(bottles, {
-      maxNodes: 160_000,
-      maxDepth: 260,
+    const solver = solveOptimal(bottles, {
+      maxNodes: 500_000,
     });
     if (!solver.solved || !solver.moves) continue;
 
@@ -112,6 +111,7 @@ export function generateLevel(options: GeneratorOptions): PuzzleLevel {
       colorCount,
       emptyBottleCount,
       difficulty,
+      parMoves: solver.moves.length,
       seed: seed + attempt,
       solution: solver.moves,
     };

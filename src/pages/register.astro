@@ -1,16 +1,11 @@
 ---
 import Layout from "../layouts/Layout.astro";
-import AuthNotice from "../components/auth/AuthNotice.astro";
+import AuthForm from "../components/auth/AuthForm";
 ---
 
 <Layout
   title="Crear cuenta"
-  description="El registro de Visagames estará disponible próximamente. Mientras tanto puedes jugar como invitado."
+  description="Crea tu cuenta de Visagames con usuario y contraseña. Sin email, con progreso guardado y clasificaciones."
 >
-  <AuthNotice
-    title="Crear cuenta"
-    description="El registro llegará junto con los perfiles, los récords persistentes y las clasificaciones."
-    actionLabel="Explorar el catálogo"
-    actionHref="/games"
-  />
+  <AuthForm mode="register" client:load />
 </Layout>

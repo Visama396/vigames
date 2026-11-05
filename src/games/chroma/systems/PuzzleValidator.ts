@@ -49,6 +49,9 @@ export function validateLevel(
   ) {
     issues.push("El número de botellas extra no puede ser negativo.");
   }
+  if (!Number.isInteger(level.parMoves) || level.parMoves < 1) {
+    issues.push("El par debe ser un entero mayor o igual que 1.");
+  }
 
   const expectedBottles = level.colorCount + level.emptyBottleCount;
   if (level.bottles.length !== expectedBottles) {
@@ -90,6 +93,14 @@ export function validateLevel(
   if (level.solution) {
     if (level.solution.length === 0) {
       issues.push("La solución incluida está vacía.");
+    }
+    if (
+      Number.isInteger(level.parMoves) &&
+      level.parMoves > level.solution.length
+    ) {
+      issues.push(
+        "El par no puede superar la longitud de la solución incluida.",
+      );
     }
     const finalState = simulateSolution(level.bottles, level.solution);
     if (!finalState) {

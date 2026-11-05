@@ -71,7 +71,7 @@ function createLevelCard(
     .text(
       0,
       height / 2 - 34,
-      `${level.colorCount} colores · ${DIFFICULTY_LABELS[level.difficulty]}`,
+      `${level.colorCount} colores · ${DIFFICULTY_LABELS[level.difficulty]} · Par ${level.parMoves}`,
       {
         fontFamily: FONTS.sans,
         fontSize: "8px",
@@ -87,7 +87,9 @@ function createLevelCard(
       height / 2 - 16,
       completed
         ? bestMoves !== null
-          ? `✓ ${formatShortMoves(bestMoves)}`
+          ? bestMoves === level.parMoves
+            ? `✓ ÓPTIMA · ${bestMoves}`
+            : `✓ ${formatShortMoves(bestMoves)}`
           : "✓ COMPLETADO"
         : unlocked
           ? "DISPONIBLE"

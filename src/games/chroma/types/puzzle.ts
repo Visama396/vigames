@@ -3,6 +3,9 @@ export type ColorId = string;
 
 export type Difficulty = "tutorial" | "easy" | "normal" | "hard" | "expert";
 
+/** Calidad de una solución comparada con el par del nivel. */
+export type SolutionTier = "optimal" | "efficient" | "completed";
+
 /** Botella con segmentos ordenados de fondo a superficie. */
 export interface BottleState {
   capacity: number;
@@ -23,6 +26,8 @@ export interface PuzzleLevel {
   colorCount: number;
   emptyBottleCount: number;
   difficulty: Difficulty;
+  /** Número mínimo de movimientos con el que se puede resolver el nivel. */
+  parMoves: number;
   seed?: number;
   /**
    * Ruta conocida de vuelta a la solución. Se incluye en los niveles locales

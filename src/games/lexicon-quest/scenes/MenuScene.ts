@@ -1,8 +1,9 @@
 import Phaser from "phaser";
-import { GAME_HEIGHT, GAME_WIDTH } from "../config.ts";
+import { GAME_WIDTH } from "../config.ts";
 import { createBackdrop } from "../render/backdrop.ts";
 import { createButton, createPanel, smallCaps } from "../render/ui.ts";
 import { COLORS, FONTS, hex } from "../render/theme.ts";
+import { loadLexiconProgress } from "../systems/SaveSystem.ts";
 
 export class MenuScene extends Phaser.Scene {
   constructor() {
@@ -87,6 +88,22 @@ export class MenuScene extends Phaser.Scene {
         fontFamily: FONTS.sans,
         fontSize: "12px",
         color: hex(COLORS.muted),
+      })
+      .setOrigin(0.5);
+
+    const progress = loadLexiconProgress();
+    const progressText =
+      progress.runs > 0
+        ? `Mejor racha: ${progress.bestEnemiesDefeated} enemigos · ${progress.victories} ${
+            progress.victories === 1 ? "victoria" : "victorias"
+          }`
+        : "Tu mejor racha aparecerá aquí tras tu primera partida";
+
+    this.add
+      .text(GAME_WIDTH / 2, 714, progressText, {
+        fontFamily: FONTS.sans,
+        fontSize: "13px",
+        color: hex(COLORS.teal),
       })
       .setOrigin(0.5);
   }

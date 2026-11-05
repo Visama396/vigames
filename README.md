@@ -52,7 +52,8 @@ src/
 - [x] Ficha dinámica de juego (`/games/[slug]`).
 - [x] Páginas de clasificación y avisos de cuenta.
 - [x] Juegos Phaser reales y adaptador de juego.
-- [ ] Autenticación, perfiles y puntuaciones con Supabase.
+- [x] Autenticación con usuario/contraseña (Supabase Auth, sin email).
+- [x] Guardado de progreso en la nube y clasificaciones por juego.
 - [ ] Juego PlayCanvas real.
 
 ## Añadir un juego
@@ -64,9 +65,21 @@ src/
 
 ## Variables de entorno
 
-Copia `.env.example` a `.env` cuando se integre Supabase. Solo las variables
-con prefijo `PUBLIC_` llegan al navegador; los secretos deben configurarse en
-Netlify.
+Copia `.env.example` a `.env` y rellena los valores públicos del proyecto de
+Supabase compartido con ViPlay. Solo las variables con prefijo `PUBLIC_`
+llegan al navegador; los secretos deben configurarse en Netlify.
+
+## Base de datos
+
+Ejecuta `supabase/migrations/0001_visagames.sql` en el editor SQL de Supabase.
+El script es idempotente y añade:
+
+- `game_progress`: guardado privado por cuenta y juego.
+- `game_scores`: clasificaciones públicas sin exponer `account_id`.
+- RPCs `load_game_progress`, `save_game_progress`, `submit_game_score` y
+  `get_leaderboards`.
+- Las funciones compartidas `ensure_account_link` y `username_taken` usadas
+  por el registro y el inicio de sesión con usuario (sin email).
 
 ## Despliegue
 

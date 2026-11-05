@@ -10,11 +10,12 @@ import {
 import type { Board, CellIndex, EnemyId, PlayableWord, UpgradeId } from "../types.ts";
 import { ENEMIES, ENEMY_ORDER } from "../data/enemies.ts";
 import { createBoard, ensurePlayableBoard, extendSelection, findPlayableWord, refillBoard, shuffleBoard, wordFromSelection } from "../systems/LetterBoard.ts";
-import { createGameState, describeDamageBonuses, estimateWordDamage, getEnemyDefinitionOf, getNextEnemyDefinition, isFinalEnemy, resolveEnemyTurn, resolvePlayerAttack, startBattle } from "../systems/CombatSystem.ts";
+import { createGameState, describeDamageBonuses, estimateWordDamage, getEnemyDefinitionOf, isFinalEnemy, resolveEnemyTurn, resolvePlayerAttack, startBattle } from "../systems/CombatSystem.ts";
 import { WordValidator } from "../systems/WordValidator.ts";
 import { SPANISH_WORDS } from "../data/dictionary.ts";
 import { createRng } from "../systems/random.ts";
 import { getUpgrade, getUpgradeChoices } from "../systems/ProgressionSystem.ts";
+import { recordRunResult } from "../systems/SaveSystem.ts";
 import { createBackdrop } from "../render/backdrop.ts";
 import { createEnemyArt, type EnemyArtHandle } from "../render/EnemyArt.ts";
 import { createButton, createPanel, drawBar, floatingText, smallCaps } from "../render/ui.ts";
@@ -40,7 +41,7 @@ interface RewardCard {
 
 export class BattleScene extends Phaser.Scene {
   private validator!: WordValidator;
-  private rng = createRng();
+  private rng = createRng(Date.now() >>> 0);
   private sfx!: Sfx;
   private state = createGameState(ENEMIES["babosa"]);
   private board: Board = [];
@@ -272,7 +273,7 @@ export class BattleScene extends Phaser.Scene {
       return;
     }
     const last = this.selection[this.selection.length - 1] as CellIndex;
-    if (!Phaser.Math.Distance.Between(this.tiles[last].container.x, this.tiles[last].container.y, this.tiles[index].container.x, this.tiles[index].container.y) <= PITCH * 1.6) return;
+    if (Phaser.Math.Distance.Between(this.tiles[last].container.x, this.tiles[last].container.y, this.tiles[index].container.x, this.tiles[index].container.y) > PITCH * 1.6) return;
     const neighbors = this.tiles[last].container;
     void neighbors;
     const a = last % BOARD_CONFIG.cols;
@@ -281,7 +282,7 @@ export class BattleScene extends Phaser.Scene {
     const d = Math.floor(index / BOARD_CONFIG.cols);
     if (Math.abs(a - c) <= 1 && Math.abs(b - d) <= 1 && !(a === c && b === d)) {
       this.selection.push(index);
-      this.sfx.select();
+      this.sfx.select(index);
       this.refreshSelection();
     }
   }
@@ -465,7 +466,7 @@ export class BattleScene extends Phaser.Scene {
       this.refreshAll();
       return;
     }
-    this.sfx.attack();
+    this.sfx.attack(word.length);
     this.enemyArt?.hit();
     floatingText(this, this.enemyArt?.container.x ?? 754, 420, `-${result.damage}`, COLORS.goldBright, 32, DEPTH.tooltip);
     if (result.healed && result.healed > 0) {
@@ -478,17 +479,17 @@ export class BattleScene extends Phaser.Scene {
     this.refreshAll();
 
     if (result.enemyDefeated) {
-      this.state.stats.enemiesDefeated += 1;
       this.enemyArt?.die(() => {
         this.showRewardPanel(!isFinalEnemy(this.state));
         if (isFinalEnemy(this.state)) {
+          recordRunResult(this.state, true);
           this.showOverlay(true, "VICTORIA", "Has purificado el Lexicon.\nLos manuscritos vuelven a guardar palabras en paz.");
         }
       });
       return;
     }
 
-    if (this.state.phase === "enemy") {
+    if ((this.state.phase as string) === "enemy") {
       this.time.delayedCall(650, () => this.runEnemyTurn());
     }
   }
@@ -508,6 +509,7 @@ export class BattleScene extends Phaser.Scene {
     }
     this.refreshAll();
     if (result.defeated || this.state.phase === "defeat") {
+      recordRunResult(this.state, false);
       this.showOverlay(true, "DERROTA", "La tinta te alcanza.\nRevisa tu vocabulario e inténtalo de nuevo.");
       return;
     }

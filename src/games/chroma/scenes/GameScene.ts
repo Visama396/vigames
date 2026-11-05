@@ -15,6 +15,7 @@ import {
 } from "../systems/MoveValidator.ts";
 import {
   applyLevelCompletion,
+  getSolutionTier,
   loadProgress,
   saveProgress,
   withSettings,
@@ -471,7 +472,9 @@ export class GameScene extends Phaser.Scene {
       this.completePanel.show({
         levelName: this.level.name,
         moves: this.history.moveCount,
+        parMoves: this.level.parMoves,
         bestMoves,
+        tier: getSolutionTier(this.history.moveCount, this.level.parMoves),
         hasNext: this.levelIndex < LEVEL_COUNT - 1,
         isNewBest,
       });

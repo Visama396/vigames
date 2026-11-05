@@ -19,7 +19,7 @@ export const games: Game[] = [
     engine: "Phaser",
     thumbnail: "/undermine.png",
     featured: true,
-    supportsScores: false,
+    supportsScores: true,
   },
   {
     slug: "lexicon-quest",
@@ -28,7 +28,7 @@ export const games: Game[] = [
     category: ["Puzles", "Estrategia"],
     engine: "Phaser",
     featured: true,
-    supportsScores: false,
+    supportsScores: true,
   },
   {
     slug: "purrgrid",
@@ -36,9 +36,8 @@ export const games: Game[] = [
     description: "Puzle cozy de lógica: coloca un gato por región, fila y columna sin que se toquen. Diez niveles con dificultad creciente.",
     category: ["Puzles", "Casual"],
     engine: "Phaser",
-    thumbnail: "/undermine.png",
     featured: true,
-    supportsScores: false,
+    supportsScores: true,
   },
   {
     slug: "chroma",
@@ -47,7 +46,7 @@ export const games: Game[] = [
     category: ["Puzles", "Casual"],
     engine: "Phaser",
     featured: true,
-    supportsScores: false,
+    supportsScores: true,
   },
 ];
 

@@ -1,9 +1,13 @@
 import Phaser from "phaser";
 import { GAME_HEIGHT, GAME_WIDTH } from "../config.ts";
-import { formatShortMoves } from "../systems/ProgressionSystem.ts";
+import {
+  describeSolutionTier,
+  formatShortMoves,
+} from "../systems/ProgressionSystem.ts";
 import { COLORS, DEPTH, FONTS, hex } from "../render/theme.ts";
 import { createButton, createPanel } from "../render/ui.ts";
 import { drawDrop } from "../render/backdrop.ts";
+import type { SolutionTier } from "../types/puzzle.ts";
 
 export interface LevelCompleteCallbacks {
   onNext: () => void;
@@ -14,7 +18,9 @@ export interface LevelCompleteCallbacks {
 export interface LevelCompleteData {
   levelName: string;
   moves: number;
+  parMoves: number;
   bestMoves: number | null;
+  tier: SolutionTier;
   hasNext: boolean;
   isNewBest: boolean;
 }
@@ -89,7 +95,7 @@ export class LevelCompletePanel {
     statsPanel.strokeRoundedRect(x + 60, y + 148, width - 120, 116, 14);
 
     const movesLabel = scene.add
-      .text(x + 108, y + 172, "MOVIMIENTOS", {
+      .text(x + 96, y + 172, "MOVIMIENTOS", {
         fontFamily: FONTS.sans,
         fontSize: "10px",
         fontStyle: "bold",
@@ -98,7 +104,7 @@ export class LevelCompletePanel {
       })
       .setOrigin(0, 0);
     const movesValue = scene.add
-      .text(x + 108, y + 192, String(data.moves), {
+      .text(x + 96, y + 192, String(data.moves), {
         fontFamily: FONTS.mono,
         fontSize: "28px",
         fontStyle: "bold",
@@ -106,8 +112,26 @@ export class LevelCompletePanel {
       })
       .setOrigin(0, 0);
 
+    const parLabel = scene.add
+      .text(x + 236, y + 172, "PAR", {
+        fontFamily: FONTS.sans,
+        fontSize: "10px",
+        fontStyle: "bold",
+        color: hex(COLORS.muted),
+        letterSpacing: 1.5,
+      })
+      .setOrigin(0, 0);
+    const parValue = scene.add
+      .text(x + 236, y + 192, String(data.parMoves), {
+        fontFamily: FONTS.mono,
+        fontSize: "28px",
+        fontStyle: "bold",
+        color: hex(COLORS.sky),
+      })
+      .setOrigin(0, 0);
+
     const bestLabel = scene.add
-      .text(x + 300, y + 172, "MEJOR MARCA", {
+      .text(x + 348, y + 172, "MEJOR MARCA", {
         fontFamily: FONTS.sans,
         fontSize: "10px",
         fontStyle: "bold",
@@ -117,7 +141,7 @@ export class LevelCompletePanel {
       .setOrigin(0, 0);
     const bestValue = scene.add
       .text(
-        x + 300,
+        x + 348,
         y + 192,
         data.bestMoves === null ? "—" : formatShortMoves(data.bestMoves),
         {
@@ -129,14 +153,37 @@ export class LevelCompletePanel {
       )
       .setOrigin(0, 0);
 
+    const tierValue = scene.add
+      .text(
+        GAME_WIDTH / 2,
+        y + 238,
+        describeSolutionTier(data.tier),
+        {
+          fontFamily: FONTS.sans,
+          fontSize: "12px",
+          fontStyle: "bold",
+          color: hex(
+            data.tier === "optimal"
+              ? COLORS.goldBright
+              : data.tier === "efficient"
+                ? COLORS.mint
+                : COLORS.creamDark,
+          ),
+        },
+      )
+      .setOrigin(0.5, 0);
+
     root.add([
       title,
       levelName,
       statsPanel,
       movesLabel,
       movesValue,
+      parLabel,
+      parValue,
       bestLabel,
       bestValue,
+      tierValue,
     ]);
 
     const message = scene.add

@@ -20,12 +20,12 @@ const { game } = Astro.props;
 
 <article class="group relative overflow-hidden rounded-2xl border border-white/10 bg-white/[0.03] transition-all hover:-translate-y-0.5 hover:border-brand-400/50 hover:bg-white/[0.06] hover:shadow-lg hover:shadow-brand-500/10">
   <a href={game.comingSoon ? "#" : `/games/${game.slug}`} class="block">
-    <div class="relative aspect-video w-full overflow-hidden bg-gradient-to-br from-slate-800 to-slate-900">
+    <div class="relative aspect-[3/2] w-full overflow-hidden bg-gradient-to-br from-slate-800 to-slate-900">
       {game.thumbnail ? (
         <img
           src={game.thumbnail}
           alt={game.title}
-          class="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+          class="h-full w-full object-contain transition-transform duration-500 group-hover:scale-105"
           loading="lazy"
         />
       ) : (

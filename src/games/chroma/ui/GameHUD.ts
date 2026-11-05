@@ -2,7 +2,11 @@ import Phaser from "phaser";
 import { BOTTOM_BAR, BOARD_AREA, TOP_BAR } from "../config.ts";
 import type { PuzzleLevel } from "../types/puzzle.ts";
 import { DIFFICULTY_LABELS } from "../types/puzzle.ts";
-import { formatShortMoves } from "../systems/ProgressionSystem.ts";
+import {
+  formatShortMoves,
+  getSolutionTier,
+  SOLUTION_TIER_LABELS,
+} from "../systems/ProgressionSystem.ts";
 import { COLORS, DEPTH, FONTS, hex } from "../render/theme.ts";
 import {
   createButton,
@@ -38,6 +42,7 @@ export class GameHUD {
   private readonly movesText: Phaser.GameObjects.Text;
   private readonly completedText: Phaser.GameObjects.Text;
   private readonly bestText: Phaser.GameObjects.Text;
+  private readonly tierText: Phaser.GameObjects.Text;
   private readonly progressBar: Phaser.GameObjects.Graphics;
   private readonly undoButton: ButtonHandle;
   private readonly resetButton: ButtonHandle;
@@ -136,6 +141,12 @@ export class GameHUD {
       fontSize: "10px",
       color: hex(COLORS.mutedDark),
     });
+    this.tierText = scene.add.text(850, TOP_BAR.y + 62, "", {
+      fontFamily: FONTS.sans,
+      fontSize: "10px",
+      fontStyle: "bold",
+      color: hex(COLORS.muted),
+    });
 
     const completedLabel = smallCaps(
       scene,
@@ -164,6 +175,7 @@ export class GameHUD {
       movesLabel,
       this.movesText,
       this.bestText,
+      this.tierText,
       completedLabel,
       this.completedText,
       this.progressBar,
@@ -246,9 +258,25 @@ export class GameHUD {
     this.undoButton.setEnabled(state.canUndo);
     this.resetButton.setEnabled(state.moves > 0);
     this.bestText.setText(
-      state.bestMoves === null
-        ? "Mejor: —"
-        : `Mejor: ${formatShortMoves(state.bestMoves)}`,
+      `Par ${this.level.parMoves} · Mejor: ${
+        state.bestMoves === null
+          ? "—"
+          : formatShortMoves(state.bestMoves)
+      }`,
+    );
+
+    const tier = getSolutionTier(state.moves, this.level.parMoves);
+    this.tierText.setText(
+      state.moves === 0 ? "" : SOLUTION_TIER_LABELS[tier],
+    );
+    this.tierText.setColor(
+      hex(
+        tier === "optimal"
+          ? COLORS.goldBright
+          : tier === "efficient"
+            ? COLORS.mint
+            : COLORS.muted,
+      ),
     );
 
     if (state.selected !== null) {

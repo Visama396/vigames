@@ -1,4 +1,5 @@
 import { useEffect, useRef } from "react";
+import { hydrateGameProgress } from "../../lib/game-progress";
 
 export default function PurrgridGame() {
   const gameRef = useRef<any>(null);
@@ -10,6 +11,9 @@ export default function PurrgridGame() {
     let cancelled = false;
 
     const boot = async () => {
+      await hydrateGameProgress("purrgrid");
+      if (cancelled) return;
+
       const PhaserModule = await import("phaser");
       if (cancelled) return;
       const Phaser = PhaserModule.default || PhaserModule;
