@@ -20,6 +20,7 @@ import {
   applyLevelCompletion,
   defaultProgress,
   describeSolutionTier,
+  EFFICIENT_MOVE_MARGIN,
   formatMoves,
   formatShortMoves,
   getSolutionTier,
@@ -316,4 +317,136 @@ test("el validador detecta niveles incoherentes", () => {
     solution: undefined,
   };
   assert.equal(validateLevel(missingSolution).ok, false);
+});
+
+test("cada nivel declara un par coherente con su solución óptima", () => {
+  for (const level of LEVELS) {
+    assert.ok(Number.isInteger(level.parMoves), `${level.id}: par entero`);
+    assert.ok(level.parMoves >= 1, `${level.id}: par positivo`);
+    assert.ok(
+      level.parMoves <= (level.solution?.length ?? 0),
+      `${level.id}: el par no supera la solución incluida`,
+    );
+
+    const result = solveOptimal(level.bottles, { maxNodes: 1_000_000 });
+    assert.equal(result.solved, true, `${level.id}: sin solución`);
+    assert.equal(
+      result.moves?.length,
+      level.parMoves,
+      `${level.id}: el par no es la longitud mínima`,
+    );
+
+    const finalState = simulateSolution(level.bottles, result.moves ?? []);
+    assert.ok(finalState, `${level.id}: la ruta óptima no es legal`);
+    assert.equal(isSolved(finalState), true, `${level.id}: no se resuelve`);
+  }
+});
+
+test("las soluciones se clasifican según su distancia al par", () => {
+  assert.equal(getSolutionTier(3, 5), "optimal");
+  assert.equal(getSolutionTier(5, 5), "optimal");
+  assert.equal(getSolutionTier(6, 5), "efficient");
+  assert.equal(
+    getSolutionTier(5 + EFFICIENT_MOVE_MARGIN, 5),
+    "efficient",
+  );
+  assert.equal(
+    getSolutionTier(5 + EFFICIENT_MOVE_MARGIN + 1, 5),
+    "completed",
+  );
+
+  assert.equal(describeSolutionTier("optimal"), "Solución óptima");
+  assert.equal(describeSolutionTier("efficient"), "Solución eficiente");
+  assert.equal(
+    describeSolutionTier("completed"),
+    "Resuelta con más pasos",
+  );
+});
+
+test("la puntuación de CHROMA premia completar, luego las óptimas y el menor número de movimientos", () => {
+  const level = LEVELS[0];
+  const other = LEVELS[1];
+
+  const oneOptimal = computeGameScore("chroma", {
+    completedLevels: [level.id],
+    bestMoveCounts: { [level.id]: level.parMoves },
+  });
+  assert.ok(oneOptimal);
+  assert.equal(oneOptimal.detail.completed, 1);
+  assert.equal(oneOptimal.detail.optimalSolutions, 1);
+  assert.equal(oneOptimal.detail.totalMoves, level.parMoves);
+
+  // Completar otro nivel pesa más que cualquier mejora de movimientos.
+  const twoCompleted = computeGameScore("chroma", {
+    completedLevels: [level.id, other.id],
+    bestMoveCounts: {
+      [level.id]: level.parMoves + 50,
+      [other.id]: other.parMoves + 50,
+    },
+  });
+  assert.ok(twoCompleted);
+  assert.ok(twoCompleted.score > oneOptimal.score);
+
+  // Con los mismos niveles completados, una solución óptima suma más.
+  const oneSuboptimal = computeGameScore("chroma", {
+    completedLevels: [level.id],
+    bestMoveCounts: { [level.id]: level.parMoves + 1 },
+  });
+  assert.ok(oneSuboptimal);
+  assert.ok(oneOptimal.score > oneSuboptimal.score);
+  assert.equal(oneSuboptimal.detail.optimalSolutions, 0);
+
+  // Con las mismas óptimas, menos movimientos suma más.
+  const fewerMoves = computeGameScore("chroma", {
+    completedLevels: [level.id, other.id],
+    bestMoveCounts: {
+      [level.id]: level.parMoves,
+      [other.id]: other.parMoves,
+    },
+  });
+  const moreMoves = computeGameScore("chroma", {
+    completedLevels: [level.id, other.id],
+    bestMoveCounts: {
+      [level.id]: level.parMoves + EFFICIENT_MOVE_MARGIN,
+      [other.id]: other.parMoves + EFFICIENT_MOVE_MARGIN,
+    },
+  });
+  assert.ok(fewerMoves);
+  assert.ok(moreMoves);
+  assert.ok(fewerMoves.score > moreMoves.score);
+
+  assert.equal(
+    computeGameScore("chroma", {
+      completedLevels: [],
+      bestMoveCounts: { [level.id]: level.parMoves },
+    }),
+    null,
+  );
+
+  const detail = formatScoreDetail(
+    "chroma",
+    oneOptimal.detail,
+    oneOptimal.score,
+  );
+  assert.match(detail, /^1\/12 niveles/);
+  assert.match(detail, /1 óptimas/);
+  assert.match(detail, new RegExp(`${level.parMoves} mov\\.$`));
+});
+
+test("el generador registra el par óptimo del nivel", () => {
+  const level = generateLevel({
+    colorCount: 3,
+    emptyBottleCount: 2,
+    capacity: 4,
+    id: "chroma-par-test",
+    name: "Par",
+    difficulty: "easy",
+    seed: 77,
+    attempts: 40,
+  });
+
+  const optimal = solveOptimal(level.bottles, { maxNodes: 1_000_000 });
+  assert.equal(optimal.solved, true);
+  assert.equal(level.parMoves, optimal.moves?.length);
+  assert.equal(validateLevel(level).ok, true);
 });
