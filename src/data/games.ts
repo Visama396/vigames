@@ -48,6 +48,24 @@ export const games: Game[] = [
     featured: true,
     supportsScores: true,
   },
+  {
+    slug: "exit-jam",
+    title: "EXIT JAM",
+    description: "Puzle de bloques y puertas: desliza cada pieza hasta la salida de su color y despeja el tablero. Diez niveles con pistas, deshacer y estrellas.",
+    category: ["Puzles", "Casual"],
+    engine: "Phaser",
+    featured: true,
+    supportsScores: true,
+  },
+  {
+    slug: "tenlink",
+    title: "TENLINK",
+    description: "Puzle numérico infinito: empareja números conectados que sumen 10, compacta filas y pide más números hasta quedarte sin parejas.",
+    category: ["Puzles", "Casual"],
+    engine: "Phaser",
+    featured: true,
+    supportsScores: true,
+  },
 ];
 
 export const featuredGames = games.filter((game) => game.featured);

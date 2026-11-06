@@ -2,6 +2,10 @@ import {
   LEVEL_COUNT as CHROMA_LEVEL_COUNT,
   LEVELS as CHROMA_LEVELS,
 } from "../games/chroma/data/levels.ts";
+import {
+  LEVEL_COUNT as EXIT_JAM_LEVEL_COUNT,
+  LEVELS as EXIT_JAM_LEVELS,
+} from "../games/exit-jam/data/levels.ts";
 import { ENEMY_ORDER } from "../games/lexicon-quest/data/enemies.ts";
 import { LEVEL_COUNT as PURRGRID_LEVEL_COUNT } from "../games/purrgrid/data/levels.ts";
 
@@ -98,6 +102,70 @@ function chromaScore(progress: unknown): GameScore | null {
   };
 }
 
+function exitJamScore(progress: unknown): GameScore | null {
+  const data = progressOf(progress);
+  const completed = countStrings(data.completedLevels);
+  const totalMoves = sumNumericRecord(data.bestMoveCounts);
+
+  if (completed === 0) return null;
+
+  const completedIds = new Set(
+    Array.isArray(data.completedLevels)
+      ? data.completedLevels.filter(
+          (item): item is string => typeof item === "string",
+        )
+      : [],
+  );
+  const bestMoveCounts = isRecord(data.bestMoveCounts)
+    ? data.bestMoveCounts
+    : {};
+  const perfectLevels = EXIT_JAM_LEVELS.reduce((total, level) => {
+    if (!completedIds.has(level.id)) return total;
+    const best = toFiniteNumber(bestMoveCounts[level.id]);
+    return total + (best !== null && best <= level.targetMoves ? 1 : 0);
+  }, 0);
+
+  return {
+    // Niveles completados, luego objetivos de tres estrellas y menos movimientos.
+    score:
+      completed * 1_000_000_000_000 +
+      perfectLevels * 1_000_000_000 -
+      Math.min(totalMoves, 999_999_999),
+    detail: {
+      completed,
+      levelCount: EXIT_JAM_LEVEL_COUNT,
+      perfectLevels,
+      totalMoves,
+    },
+  };
+}
+
+function tenlinkScore(progress: unknown): GameScore | null {
+  const data = progressOf(progress);
+  const bestPairs = Math.max(
+    0,
+    Math.floor(toFiniteNumber(data.bestPairs) ?? 0),
+  );
+  if (bestPairs === 0) return null;
+
+  const bestTimeRaw = toFiniteNumber(data.bestTimeMs);
+  const bestTimeMs =
+    bestTimeRaw === null ? null : Math.max(0, Math.floor(bestTimeRaw));
+  const runs = Math.max(0, Math.floor(toFiniteNumber(data.runs) ?? 0));
+  const timePenalty =
+    bestTimeMs === null ? 0 : Math.min(999_999_999, bestTimeMs);
+
+  return {
+    // Más parejas siempre gana; a igualdad, una partida más rápida puntúa más.
+    score: bestPairs * 1_000_000_000 - timePenalty,
+    detail: {
+      bestPairs,
+      bestTimeMs,
+      runs,
+    },
+  };
+}
+
 function undermineScore(progress: unknown): GameScore | null {
   const data = progressOf(progress);
   const components = toFiniteNumber(data.componentsProduced) ?? 0;
@@ -165,6 +233,10 @@ export function computeGameScore(
       return purrgridScore(progress);
     case "chroma":
       return chromaScore(progress);
+    case "exit-jam":
+      return exitJamScore(progress);
+    case "tenlink":
+      return tenlinkScore(progress);
     case "undermine":
       return undermineScore(progress);
     case "lexicon-quest":
@@ -222,6 +294,25 @@ export function formatScoreDetail(
       const optimalSolutions = detailNumber(detail, "optimalSolutions");
       const totalMoves = detailNumber(detail, "totalMoves");
       return `${completed}/${levelCount} niveles · ${optimalSolutions} óptimas · ${totalMoves} mov.`;
+    }
+    case "exit-jam": {
+      const completed = detailNumber(detail, "completed");
+      const levelCount = detailNumber(
+        detail,
+        "levelCount",
+        EXIT_JAM_LEVEL_COUNT,
+      );
+      const perfectLevels = detailNumber(detail, "perfectLevels");
+      const totalMoves = detailNumber(detail, "totalMoves");
+      return `${completed}/${levelCount} niveles · ${perfectLevels} perfectos · ${totalMoves} mov.`;
+    }
+    case "tenlink": {
+      const bestPairs = detailNumber(detail, "bestPairs");
+      const bestTimeMs = detailNumber(detail, "bestTimeMs");
+      const runs = detailNumber(detail, "runs");
+      return `${bestPairs} parejas · ${
+        bestTimeMs > 0 ? formatDurationMs(bestTimeMs) : "—"
+      } · ${runs} ${runs === 1 ? "partida" : "partidas"}`;
     }
     case "undermine": {
       const components = detailNumber(detail, "components");

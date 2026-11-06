@@ -1,6 +1,8 @@
 import { SAVE_KEY as CHROMA_SAVE_KEY } from "../games/chroma/config.ts";
+import { SAVE_KEY as EXIT_JAM_SAVE_KEY } from "../games/exit-jam/config.ts";
 import { SAVE_KEY as LEXICON_SAVE_KEY } from "../games/lexicon-quest/config.ts";
 import { SAVE_KEY as PURRGRID_SAVE_KEY } from "../games/purrgrid/config.ts";
+import { SAVE_KEY as TENLINK_SAVE_KEY } from "../games/tenlink/config.ts";
 import { SAVE_KEY as UNDERMINE_SAVE_KEY } from "../games/undermine/config.ts";
 import { computeGameScore } from "./game-scores";
 import { isSupabaseConfigured, supabase } from "./supabase";
@@ -10,6 +12,8 @@ export const GAME_STORAGE_KEYS = {
   chroma: CHROMA_SAVE_KEY,
   undermine: UNDERMINE_SAVE_KEY,
   "lexicon-quest": LEXICON_SAVE_KEY,
+  "exit-jam": EXIT_JAM_SAVE_KEY,
+  tenlink: TENLINK_SAVE_KEY,
 } as const;
 
 export type GameSlug = keyof typeof GAME_STORAGE_KEYS;
